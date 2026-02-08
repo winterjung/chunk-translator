@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chunk Translator</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <div class="panel-header">
+        <div class="title">
+          <h1>Chunk Translator</h1>
+          <div class="sub">contact: me@winterjung.dev</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="settingsSection">
+      <div class="section-title section-title-row">
+        <span>[0] 설정</span>
+        <button id="settingsToggle" class="btn-ghost btn-small" type="button" aria-expanded="true" aria-controls="settingsBody">접기</button>
+      </div>
+      <div id="settingsBody">
+        <div class="grid-2">
+          <div>
+            <label class="label" for="baseUrl">Base URL</label>
+            <input id="baseUrl" type="text" aria-label="Base URL" value="https://api.openai.com/v1" />
+            <div class="preset-chips" id="baseUrlPresets" aria-label="Base URL 프리셋">
+              <button type="button" class="chip" data-target="baseUrl" data-value="https://api.openai.com/v1">
+                <span class="chip-title">OpenAI</span>
+                <span class="chip-sub">https://api.openai.com/v1</span>
+              </button>
+              <button type="button" class="chip" data-target="baseUrl" data-value="https://api.anthropic.com" disabled aria-disabled="true">
+                <span class="chip-title">Anthropic (not supported)</span>
+                <span class="chip-sub">https://api.anthropic.com</span>
+              </button>
+              <button type="button" class="chip" data-target="baseUrl" data-value="https://generativelanguage.googleapis.com/v1beta/openai">
+                <span class="chip-title">Gemini</span>
+                <span class="chip-sub">https://generativelanguage.googleapis.com/v1beta/openai</span>
+              </button>
+              <button type="button" class="chip" data-target="baseUrl" data-value="https://openrouter.ai/api/v1">
+                <span class="chip-title">OpenRouter</span>
+                <span class="chip-sub">https://openrouter.ai/api/v1</span>
+              </button>
+              <button type="button" class="chip" data-target="baseUrl" data-value="http://localhost:11434">
+                <span class="chip-title">Ollama</span>
+                <span class="chip-sub">http://localhost:11434</span>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="apiKey">API Key</label>
+            <input id="apiKey" type="password" aria-label="API Key" placeholder="sk-..." />
+          </div>
+        </div>
+        <div class="grid-3" style="margin-top: 8px;">
+          <div>
+            <label class="label" for="summaryModel">요약 모델</label>
+            <input id="summaryModel" type="text" aria-label="요약 모델" value="gpt-5.2" />
+            <div class="preset-chips" id="summaryModelPresets" aria-label="요약 모델 프리셋">
+              <button type="button" class="chip" data-target="summaryModel" data-value="o4">o4</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="gpt-5.2">gpt-5.2</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="gpt-5-mini">gpt-5-mini</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="claude-opus-4-6">claude-opus-4-6</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="claude-sonnet-4-5">claude-sonnet-4-5</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="gemini-3-pro">gemini-3-pro</button>
+              <button type="button" class="chip" data-target="summaryModel" data-value="gemini-3-flash">gemini-3-flash</button>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="translateModel">번역 모델</label>
+            <input id="translateModel" type="text" aria-label="번역 모델" value="gpt-5-nano" />
+            <div class="preset-chips" id="translateModelPresets" aria-label="번역 모델 프리셋">
+              <button type="button" class="chip" data-target="translateModel" data-value="gpt-5-mini">gpt-5-mini</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="gpt-5-nano">gpt-5-nano</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="claude-sonnet-4-5">claude-sonnet-4-5</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="claude-haiku-4-5">claude-haiku-4-5</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="gemini-3-flash">gemini-3-flash</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="gemini-2.5-flash">gemini-2.5-flash</button>
+              <button type="button" class="chip" data-target="translateModel" data-value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</button>
+            </div>
+          </div>
+          <div>
+            <label class="label" for="targetLang">타깃 언어</label>
+            <input id="targetLang" type="text" aria-label="타깃 언어" value="English" placeholder="예: English, Japanese, Python" />
+            <div class="preset-chips" id="targetLangPresets" aria-label="타깃 언어 프리셋">
+              <button type="button" class="chip" data-target="targetLang" data-value="English">English</button>
+              <button type="button" class="chip" data-target="targetLang" data-value="Japanese">Japanese</button>
+              <button type="button" class="chip" data-target="targetLang" data-value="Python">Python</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 8px;">
+          <div class="label">스타일 프리셋</div>
+          <div class="preset-list">
+            <label class="preset-item">
+              <div>
+                <input type="radio" name="stylePreset" value="origin" checked aria-label="스타일 프리셋 원본 느낌대로" />
+                <span class="preset-label">원본 느낌대로</span>
+              </div>
+              <div class="preset-example">예: 원문의 톤과 호흡을 최대한 유지한다.</div>
+            </label>
+            <label class="preset-item">
+              <div>
+                <input type="radio" name="stylePreset" value="tech" aria-label="스타일 프리셋 기술블로그" />
+                <span class="preset-label">기술블로그</span>
+              </div>
+              <div class="preset-example">예: 개념 정의 → 원인 → 해결 순으로 정리한다.</div>
+            </label>
+            <label class="preset-item">
+              <div>
+                <input type="radio" name="stylePreset" value="hacker" aria-label="스타일 프리셋 Hackernews" />
+                <span class="preset-label">Hackernews</span>
+              </div>
+              <div class="preset-example">예: 핵심 주장과 트레이드오프를 짧게 제시한다.</div>
+            </label>
+            <label class="preset-item">
+              <div>
+                <input type="radio" name="stylePreset" value="pedantic" aria-label="스타일 프리셋 지루하고 현학적임" />
+                <span class="preset-label">지루하고 현학적임</span>
+              </div>
+              <div class="preset-example">예: 엄밀한 용어와 장문의 문장으로 서술한다.</div>
+            </label>
+            <label class="preset-item">
+              <div>
+                <input type="radio" name="stylePreset" value="custom" aria-label="스타일 프리셋 자유 입력" />
+                <span class="preset-label">자유 입력</span>
+              </div>
+              <div class="preset-example">예: 원하는 톤/지시를 직접 입력한다.</div>
+              <textarea id="styleCustom" aria-label="전역 스타일 자유 입력" placeholder="예: 더 간결하게, 기술 용어 유지" rows="3"></textarea>
+            </label>
+          </div>
+        </div>
+        <div class="log is-hidden" id="inputLog"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="sourceSection">
+      <div class="section-title">[1] 원문</div>
+      <div>
+        <label class="label" for="sourceInput">원문 입력</label>
+        <textarea id="sourceInput" aria-label="원문 입력" rows="10" placeholder="여기에 번역할 원문을 붙여넣기"></textarea>
+      </div>
+      <div class="actions">
+        <button id="chunkBtn" aria-label="청킹 생성">+ 청킹 생성</button>
+        <button id="resetBtn" class="btn-ghost" aria-label="입력 내용 초기화">↺ 입력 초기화</button>
+      </div>
+    </section>
+
+    <section class="panel" id="summarySection">
+      <div class="section-title">[2] 요약</div>
+      <div class="actions">
+        <button id="summaryBtn" class="btn-accent" aria-label="5줄 요약 생성">+ 5줄 요약 생성</button>
+        <button id="summaryAgainBtn" aria-label="요약 다시 생성">↻ 요약 다시 생성</button>
+      </div>
+      <div class="help">이 요약은 각 청크 번역 시 전체 맥락으로 사용됩니다.</div>
+      <textarea id="summaryText" aria-label="요약 텍스트" rows="6" placeholder="요약 결과 (편집 가능)"></textarea>
+      <div class="log is-hidden" id="summaryLog"></div>
+    </section>
+
+    <section class="panel" id="workSection">
+      <div class="section-title">[3] 청킹 · 번역</div>
+      <div class="actions">
+        <div class="chunk-meta">총 <span id="chunkCount">0</span> 청크</div>
+        <button id="translateBtn" class="btn-accent" aria-label="전체 번역 시작">+ 전체 번역 시작</button>
+        <button id="copyAllBtn" class="btn-accent" aria-label="전체 번역 복사">✓ 전체 번역 복사</button>
+      </div>
+      <div style="margin-top: 8px;">
+        <label class="label" for="concurrencyRange">동시 요청</label>
+        <div class="row">
+          <input id="concurrencyRange" type="range" min="1" max="8" step="1" value="2" aria-label="동시 요청" />
+          <div class="chunk-meta">현재 <span id="concurrencyValue">2</span>개</div>
+        </div>
+      </div>
+      <div class="chunk-list" id="chunkList"></div>
+      <div class="log is-hidden" id="chunkLog"></div>
+    </section>
+
+    <section class="panel" id="usageSection">
+      <div class="section-title">[4] 사용량</div>
+      <div class="usage-summary">
+        <div>요약 모델 사용량: <span id="summaryUsage">N/A</span></div>
+        <div>번역 모델 사용량: <span id="translateUsage">N/A</span></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">Copied.</div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
