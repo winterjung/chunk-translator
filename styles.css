@@ -176,6 +176,11 @@
       color: var(--muted);
     }
 
+    .btn-done {
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+
     .help {
       font-size: 12px;
       color: var(--muted);
@@ -297,6 +302,10 @@
     .chunk-details {
       display: grid;
       gap: 6px;
+    }
+
+    .chunk-details[hidden] {
+      display: none;
     }
 
     .chunk-head {

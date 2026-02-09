@@ -486,11 +486,12 @@
     }
 
     function shouldShowDetails(chunk) {
-      return chunk.status !== "pending";
+      return Boolean(chunk.translatedText && chunk.translatedText.trim());
     }
 
     function applyTranslateButtonState(chunk, button) {
       clearTranslateLabelTimer(chunk.id);
+      button.classList.remove("btn-done");
       if (chunk.status === "active") {
         button.textContent = "Translating...";
         button.disabled = true;
@@ -498,7 +499,8 @@
       }
       button.disabled = false;
       if (chunk.status === "done") {
-        button.textContent = "완료";
+        button.textContent = "✓ 완료";
+        button.classList.add("btn-done");
         const timer = setTimeout(() => {
           translateLabelTimers.delete(chunk.id);
           const current = state.chunks.find((item) => item.id === chunk.id);
@@ -508,6 +510,7 @@
           const currentButton = card.querySelector("[data-role='translate-btn']");
           if (!currentButton) return;
           currentButton.textContent = "↻ 재번역";
+          currentButton.classList.remove("btn-done");
         }, 3000);
         translateLabelTimers.set(chunk.id, timer);
         return;
