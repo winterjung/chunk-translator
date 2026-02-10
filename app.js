@@ -418,6 +418,31 @@
       return merged;
     }
 
+    function splitTrailingHeadingLine(text) {
+      const lines = text.split("\n");
+      let end = lines.length - 1;
+      while (end >= 0 && lines[end].trim() === "") end -= 1;
+      if (end < 0) return { body: "", heading: "" };
+      const lastLine = lines[end];
+      if (!/^#{1,6}\s+/.test(lastLine.trimStart())) return { body: text, heading: "" };
+      const bodyLines = lines.slice(0, end);
+      while (bodyLines.length && bodyLines[bodyLines.length - 1].trim() === "") bodyLines.pop();
+      return { body: bodyLines.join("\n"), heading: lastLine.trimEnd() };
+    }
+
+    function shiftTrailingHeadings(chunks) {
+      if (!Array.isArray(chunks) || chunks.length === 0) return [];
+      const output = chunks.slice();
+      for (let i = 0; i < output.length - 1; i += 1) {
+        const { body, heading } = splitTrailingHeadingLine(output[i]);
+        if (!heading) continue;
+        output[i] = body;
+        const next = output[i + 1].replace(/^\n+/, "");
+        output[i + 1] = `${heading}\n\n${next}`;
+      }
+      return output.filter((chunk) => chunk && chunk.trim());
+    }
+
     function chunkText(raw) {
       const paragraphs = raw.split(/\n\s*\n+/);
       const chunks = [];
@@ -433,14 +458,11 @@
           let buffer = "";
           sentences.forEach((sentence) => {
             if (sentence.length > 800) {
-              const pieces = splitByLength(sentence, 800);
-              pieces.forEach((piece) => {
-                if (buffer.length) {
-                  paraChunks.push(buffer);
-                  buffer = "";
-                }
-                paraChunks.push(piece);
-              });
+              if (buffer.length) {
+                paraChunks.push(buffer);
+                buffer = "";
+              }
+              paraChunks.push(sentence);
               return;
             }
             if (buffer.length + sentence.length > 800 && buffer.length) {
@@ -457,7 +479,8 @@
           endsParagraph.push(index === paraChunks.length - 1);
         });
       });
-      return mergeSmallChunks(chunks, endsParagraph, 300);
+      const merged = mergeSmallChunks(chunks, endsParagraph, 300);
+      return shiftTrailingHeadings(merged);
     }
 
     function createChunk(text) {
