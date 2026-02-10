@@ -1198,7 +1198,7 @@
           {
             role: "user",
             content: [
-              "Summarize the following text into exactly 3-5 bullet points in the target language.",
+              "Summarize the following text into 3-5 bullet points in the target language.",
               `Target language: ${target}`,
               "<text>",
               source,
