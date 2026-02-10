@@ -68,7 +68,6 @@
       sourceInput: document.getElementById("sourceInput"),
       summaryText: document.getElementById("summaryText"),
       summaryBtn: document.getElementById("summaryBtn"),
-      summaryAgainBtn: document.getElementById("summaryAgainBtn"),
       chunkBtn: document.getElementById("chunkBtn"),
       resetBtn: document.getElementById("resetBtn"),
       translateBtn: document.getElementById("translateBtn"),
@@ -1187,7 +1186,6 @@
         return;
       }
       els.summaryBtn.disabled = true;
-      els.summaryAgainBtn.disabled = true;
       setLog(els.summaryLog, "요약 생성 중...", "");
       try {
         els.summaryText.value = "";
@@ -1241,7 +1239,6 @@
         setLog(els.summaryLog, `Error: ${err.message}`, "error");
       } finally {
         els.summaryBtn.disabled = false;
-        els.summaryAgainBtn.disabled = false;
       }
     }
 
@@ -1534,7 +1531,6 @@
         els.resetBtn.addEventListener("click", clearAllInputs);
       }
       els.summaryBtn.addEventListener("click", generateSummary);
-      els.summaryAgainBtn.addEventListener("click", generateSummary);
       els.translateBtn.addEventListener("click", toggleTranslateAll);
       els.copyAllBtn.addEventListener("click", copyAllTranslations);
 
