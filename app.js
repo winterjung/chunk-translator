@@ -503,6 +503,12 @@
     }
 
     function shouldShowDetails(chunk) {
+      if (chunk.status && chunk.status !== "pending") return true;
+      return Boolean(chunk.translatedText && chunk.translatedText.trim());
+    }
+
+    function shouldShowExtra(chunk) {
+      if (!chunk || chunk.status !== "done") return false;
       return Boolean(chunk.translatedText && chunk.translatedText.trim());
     }
 
@@ -625,14 +631,20 @@
         extraArea.placeholder = "예: 더 간결하게, 제목을 유지";
         extraArea.value = chunk.extraInstruction || "";
 
+        const extraSection = document.createElement("div");
+        extraSection.className = "chunk-extra";
+        extraSection.dataset.role = "extra-section";
+        extraSection.hidden = !shouldShowExtra(chunk);
+        extraSection.appendChild(extraLabel);
+        extraSection.appendChild(extraArea);
+
         const details = document.createElement("div");
         details.className = "chunk-details";
         details.dataset.role = "details";
         details.hidden = !shouldShowDetails(chunk);
         details.appendChild(resultLabel);
         details.appendChild(resultArea);
-        details.appendChild(extraLabel);
-        details.appendChild(extraArea);
+        details.appendChild(extraSection);
 
         const errorText = document.createElement("div");
         errorText.className = "error-text";
@@ -676,6 +688,10 @@
       const details = card.querySelector("[data-role='details']");
       if (details) {
         details.hidden = !shouldShowDetails(chunk);
+      }
+      const extraSection = card.querySelector("[data-role='extra-section']");
+      if (extraSection) {
+        extraSection.hidden = !shouldShowExtra(chunk);
       }
       const translateBtn = card.querySelector("[data-role='translate-btn']");
       if (translateBtn) {

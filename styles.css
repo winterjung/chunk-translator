@@ -281,6 +281,15 @@
       display: none;
     }
 
+    .chunk-extra {
+      display: grid;
+      gap: 6px;
+    }
+
+    .chunk-extra[hidden] {
+      display: none;
+    }
+
     .chunk-head {
       display: flex;
       justify-content: space-between;
