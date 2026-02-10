@@ -25,8 +25,8 @@
       summary: { text: "", usage: null },
       chunks: [],
       usageTotals: {
-        summary: { prompt: 0, completion: 0, total: 0, has: false },
-        translate: { prompt: 0, completion: 0, total: 0, has: false },
+        summary: { prompt: 0, cached: 0, completion: 0, total: 0, has: false },
+        translate: { prompt: 0, cached: 0, completion: 0, total: 0, has: false },
       },
       queue: {
         list: [],
@@ -59,6 +59,15 @@
       chunkCount: document.getElementById("chunkCount"),
       summaryUsage: document.getElementById("summaryUsage"),
       translateUsage: document.getElementById("translateUsage"),
+      summaryCost: document.getElementById("summaryCost"),
+      translateCost: document.getElementById("translateCost"),
+      totalCost: document.getElementById("totalCost"),
+      summaryPricePrompt: document.getElementById("summaryPricePrompt"),
+      summaryPriceCached: document.getElementById("summaryPriceCached"),
+      summaryPriceCompletion: document.getElementById("summaryPriceCompletion"),
+      translatePricePrompt: document.getElementById("translatePricePrompt"),
+      translatePriceCached: document.getElementById("translatePriceCached"),
+      translatePriceCompletion: document.getElementById("translatePriceCompletion"),
       copyAllBtn: document.getElementById("copyAllBtn"),
       inputLog: document.getElementById("inputLog"),
       summaryLog: document.getElementById("summaryLog"),
@@ -122,6 +131,12 @@
         translateModel: els.translateModel.value.trim(),
         targetLang: els.targetLang.value.trim(),
         concurrency: Number(els.concurrencyRange.value) || DEFAULT_CONCURRENCY,
+        summaryPricePrompt: els.summaryPricePrompt.value,
+        summaryPriceCached: els.summaryPriceCached.value,
+        summaryPriceCompletion: els.summaryPriceCompletion.value,
+        translatePricePrompt: els.translatePricePrompt.value,
+        translatePriceCached: els.translatePriceCached.value,
+        translatePriceCompletion: els.translatePriceCompletion.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       setLog(els.inputLog, "Saved.", "ok");
@@ -144,6 +159,24 @@
         }
         if (data.concurrency) {
           els.concurrencyRange.value = String(data.concurrency);
+        }
+        if (data.summaryPricePrompt !== undefined) {
+          els.summaryPricePrompt.value = String(data.summaryPricePrompt ?? "");
+        }
+        if (data.summaryPriceCached !== undefined) {
+          els.summaryPriceCached.value = String(data.summaryPriceCached ?? "");
+        }
+        if (data.summaryPriceCompletion !== undefined) {
+          els.summaryPriceCompletion.value = String(data.summaryPriceCompletion ?? "");
+        }
+        if (data.translatePricePrompt !== undefined) {
+          els.translatePricePrompt.value = String(data.translatePricePrompt ?? "");
+        }
+        if (data.translatePriceCached !== undefined) {
+          els.translatePriceCached.value = String(data.translatePriceCached ?? "");
+        }
+        if (data.translatePriceCompletion !== undefined) {
+          els.translatePriceCompletion.value = String(data.translatePriceCompletion ?? "");
         }
         updateConcurrencyUI();
       } catch (err) {
@@ -197,13 +230,39 @@
       draftTimer = setTimeout(saveDraft, 500);
     }
 
+    function coerceNumber(value) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : 0;
+    }
+
+    function resolveCachedTokens(usage) {
+      if (!usage || typeof usage !== "object") return 0;
+      const direct = usage.cached ?? usage.cached_tokens ?? usage.prompt_cached_tokens ?? usage.input_cached_tokens;
+      if (direct !== undefined && direct !== null) return coerceNumber(direct);
+      if (usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens !== undefined) {
+        return coerceNumber(usage.prompt_tokens_details.cached_tokens);
+      }
+      if (usage.input_tokens_details && usage.input_tokens_details.cached_tokens !== undefined) {
+        return coerceNumber(usage.input_tokens_details.cached_tokens);
+      }
+      return 0;
+    }
+
+    function resolveTotalTokens(rawTotal, prompt, completion) {
+      const total = Number(rawTotal);
+      if (Number.isFinite(total) && total > 0) return total;
+      const computed = prompt + completion;
+      return Number.isFinite(computed) ? computed : 0;
+    }
+
     function normalizeStoredUsage(usage) {
       if (!usage || typeof usage !== "object") return null;
-      const prompt = usage.prompt ?? usage.prompt_tokens ?? usage.input_tokens ?? 0;
-      const completion = usage.completion ?? usage.completion_tokens ?? usage.output_tokens ?? 0;
-      const total = usage.total ?? usage.total_tokens ?? (prompt + completion);
-      if (!prompt && !completion && !total) return null;
-      return { prompt, completion, total };
+      const prompt = coerceNumber(usage.prompt ?? usage.prompt_tokens ?? usage.input_tokens);
+      const completion = coerceNumber(usage.completion ?? usage.completion_tokens ?? usage.output_tokens);
+      const total = resolveTotalTokens(usage.total ?? usage.total_tokens, prompt, completion);
+      const cached = resolveCachedTokens(usage);
+      if (!prompt && !completion && !total && !cached) return null;
+      return { prompt, cached, completion, total };
     }
 
     function getTargetLanguage() {
@@ -223,24 +282,48 @@
 
     function normalizeUsage(usage) {
       if (!usage || typeof usage !== "object") return null;
-      const prompt = usage.prompt_tokens ?? usage.input_tokens ?? 0;
-      const completion = usage.completion_tokens ?? usage.output_tokens ?? 0;
-      const total = usage.total_tokens ?? (prompt + completion);
-      if (!prompt && !completion && !total) return null;
-      return { prompt, completion, total };
+      const prompt = coerceNumber(usage.prompt ?? usage.prompt_tokens ?? usage.input_tokens);
+      const completion = coerceNumber(usage.completion ?? usage.completion_tokens ?? usage.output_tokens);
+      const total = resolveTotalTokens(usage.total ?? usage.total_tokens, prompt, completion);
+      const cached = resolveCachedTokens(usage);
+      if (!prompt && !completion && !total && !cached) return null;
+      return { prompt, cached, completion, total };
     }
 
     function addUsage(bucket, usage) {
       if (!usage) return;
       bucket.has = true;
-      bucket.prompt += usage.prompt || 0;
-      bucket.completion += usage.completion || 0;
-      bucket.total += usage.total || 0;
+      bucket.prompt += coerceNumber(usage.prompt);
+      bucket.cached += coerceNumber(usage.cached);
+      bucket.completion += coerceNumber(usage.completion);
+      bucket.total += coerceNumber(usage.total);
     }
 
     function resetUsageTotals() {
-      state.usageTotals.summary = { prompt: 0, completion: 0, total: 0, has: false };
-      state.usageTotals.translate = { prompt: 0, completion: 0, total: 0, has: false };
+      state.usageTotals.summary = { prompt: 0, cached: 0, completion: 0, total: 0, has: false };
+      state.usageTotals.translate = { prompt: 0, cached: 0, completion: 0, total: 0, has: false };
+    }
+
+    function normalizeUsageTotalsBucket(bucket) {
+      if (!bucket || typeof bucket !== "object") return null;
+      const prompt = coerceNumber(bucket.prompt);
+      const cached = coerceNumber(bucket.cached);
+      const completion = coerceNumber(bucket.completion);
+      const total = resolveTotalTokens(bucket.total, prompt, completion);
+      const has = Boolean(bucket.has || prompt || cached || completion || total);
+      if (!has) return null;
+      return { prompt, cached, completion, total, has };
+    }
+
+    function normalizeStoredUsageTotals(rawTotals) {
+      if (!rawTotals || typeof rawTotals !== "object") return null;
+      const summary = normalizeUsageTotalsBucket(rawTotals.summary);
+      const translate = normalizeUsageTotalsBucket(rawTotals.translate);
+      if (!summary && !translate) return null;
+      return {
+        summary: summary || { prompt: 0, cached: 0, completion: 0, total: 0, has: false },
+        translate: translate || { prompt: 0, cached: 0, completion: 0, total: 0, has: false },
+      };
     }
 
     function recomputeUsageTotals() {
@@ -251,11 +334,58 @@
       });
     }
 
+    function getRateValue(raw, fallback) {
+      const value = raw === "" || raw === null || raw === undefined ? null : Number(raw);
+      if (value === null || !Number.isFinite(value) || value < 0) return fallback;
+      return value;
+    }
+
+    function getPricing(kind) {
+      const promptEl = kind === "summary" ? els.summaryPricePrompt : els.translatePricePrompt;
+      const cachedEl = kind === "summary" ? els.summaryPriceCached : els.translatePriceCached;
+      const completionEl = kind === "summary" ? els.summaryPriceCompletion : els.translatePriceCompletion;
+      const prompt = getRateValue(promptEl ? promptEl.value.trim() : "", 0);
+      const cached = getRateValue(cachedEl ? cachedEl.value.trim() : "", prompt);
+      const completion = getRateValue(completionEl ? completionEl.value.trim() : "", 0);
+      return { prompt, cached, completion };
+    }
+
+    function formatUsd(value) {
+      if (!Number.isFinite(value)) return "$0.00";
+      const abs = Math.abs(value);
+      if (abs === 0) return "$0.00";
+      if (abs < 0.01) return `$${value.toFixed(4)}`;
+      return `$${value.toFixed(2)}`;
+    }
+
+    function formatUsageLine(bucket) {
+      if (!bucket.has) return "N/A";
+      return `prompt ${bucket.prompt} (cached ${bucket.cached}) / completion ${bucket.completion} / total ${bucket.total}`;
+    }
+
+    function computeCost(bucket, pricing) {
+      if (!bucket.has) return 0;
+      const prompt = coerceNumber(bucket.prompt);
+      const cached = Math.min(prompt, coerceNumber(bucket.cached));
+      const completion = coerceNumber(bucket.completion);
+      const uncached = Math.max(0, prompt - cached);
+      const cost = (uncached * pricing.prompt + cached * pricing.cached + completion * pricing.completion) / 1_000_000;
+      return Number.isFinite(cost) ? cost : 0;
+    }
+
     function updateUsageUI() {
       const s = state.usageTotals.summary;
       const t = state.usageTotals.translate;
-      els.summaryUsage.textContent = s.has ? `prompt ${s.prompt} / completion ${s.completion} / total ${s.total}` : "N/A";
-      els.translateUsage.textContent = t.has ? `prompt ${t.prompt} / completion ${t.completion} / total ${t.total}` : "N/A";
+      const summaryPricing = getPricing("summary");
+      const translatePricing = getPricing("translate");
+      const summaryCost = computeCost(s, summaryPricing);
+      const translateCost = computeCost(t, translatePricing);
+      const totalCost = summaryCost + translateCost;
+      els.summaryUsage.textContent = formatUsageLine(s);
+      els.translateUsage.textContent = formatUsageLine(t);
+      els.summaryCost.textContent = s.has ? formatUsd(summaryCost) : "N/A";
+      els.translateCost.textContent = t.has ? formatUsd(translateCost) : "N/A";
+      els.totalCost.textContent = (s.has || t.has) ? formatUsd(totalCost) : "N/A";
     }
 
     function sanitizeChunkStatus(status) {
@@ -306,6 +436,7 @@
         sourceText,
         summaryText,
         summaryUsage: state.summary.usage || null,
+        usageTotals: state.usageTotals,
         chunks: state.chunks.map(serializeChunkForDraft),
       };
       try {
@@ -341,7 +472,12 @@
         state.chunks = data.chunks.map(createChunkFromDraft).filter((chunk) => chunk.sourceText && chunk.sourceText.trim());
         renderChunks();
       }
-      recomputeUsageTotals();
+      const storedTotals = normalizeStoredUsageTotals(data ? data.usageTotals : null);
+      if (storedTotals) {
+        state.usageTotals = storedTotals;
+      } else {
+        recomputeUsageTotals();
+      }
     }
 
     const copyAllFeedback = {
@@ -1270,12 +1406,19 @@
         els.translateModel,
         els.targetLang,
         els.concurrencyRange,
+        els.summaryPricePrompt,
+        els.summaryPriceCached,
+        els.summaryPriceCompletion,
+        els.translatePricePrompt,
+        els.translatePriceCached,
+        els.translatePriceCompletion,
       ];
       saveInputs.forEach((el) => {
         el.addEventListener("change", saveSettings);
         el.addEventListener("input", () => {
           scheduleSave();
           setLog(els.inputLog, "Saved.", "ok");
+          updateUsageUI();
         });
       });
 

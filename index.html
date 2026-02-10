@@ -92,6 +92,31 @@
             </div>
           </div>
         </div>
+        <div class="grid-2" style="margin-top: 8px;">
+          <div class="price-box">
+            <div class="label">요약 모델 단가 (USD / 1M tokens)</div>
+            <div class="price-grid">
+              <label class="price-label" for="summaryPricePrompt">input</label>
+              <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50" aria-label="요약 prompt 단가" />
+              <label class="price-label" for="summaryPriceCached">cached</label>
+              <input id="summaryPriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="요약 cached 단가" />
+              <label class="price-label" for="summaryPriceCompletion">output</label>
+              <input id="summaryPriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 2.00" aria-label="요약 completion 단가" />
+            </div>
+          </div>
+          <div class="price-box">
+            <div class="label">번역 모델 단가 (USD / 1M tokens)</div>
+            <div class="price-grid">
+              <label class="price-label" for="translatePricePrompt">input</label>
+              <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50" aria-label="번역 prompt 단가" />
+              <label class="price-label" for="translatePriceCached">cached</label>
+              <input id="translatePriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="번역 cached 단가" />
+              <label class="price-label" for="translatePriceCompletion">output</label>
+              <input id="translatePriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 1.00" aria-label="번역 completion 단가" />
+            </div>
+          </div>
+        </div>
+        <div class="help">단가를 입력하면 사용량 비용이 계산됩니다. cached는 캐시 토큰 단가입니다.</div>
         <div class="log is-hidden" id="inputLog"></div>
       </div>
     </section>
@@ -140,8 +165,9 @@
     <section class="panel" id="usageSection">
       <div class="section-title">[4] 사용량</div>
       <div class="usage-summary">
-        <div>요약 모델 사용량: <span id="summaryUsage">N/A</span></div>
-        <div>번역 모델 사용량: <span id="translateUsage">N/A</span></div>
+        <div>요약 모델 사용량: <span id="summaryUsage">N/A</span> · 비용 <span id="summaryCost" class="usage-cost">N/A</span></div>
+        <div>번역 모델 사용량: <span id="translateUsage">N/A</span> · 비용 <span id="translateCost" class="usage-cost">N/A</span></div>
+        <div>총 비용: <span id="totalCost" class="usage-cost">N/A</span></div>
       </div>
     </section>
   </main>

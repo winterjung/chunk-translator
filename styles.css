@@ -118,6 +118,7 @@
 
     input[type="text"],
     input[type="password"],
+    input[type="number"],
     select,
     textarea {
       width: 100%;
@@ -221,8 +222,29 @@
       color: var(--muted);
     }
 
-    .usage-summary span {
+    .usage-summary span:not(.usage-cost) {
       color: var(--ink);
+    }
+
+    .usage-cost {
+      color: #15803d;
+    }
+
+    .price-box {
+      display: grid;
+      gap: 6px;
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 6px 8px;
+      align-items: center;
+    }
+
+    .price-label {
+      font-size: 12px;
+      color: var(--muted);
     }
 
     .preset-chips {
