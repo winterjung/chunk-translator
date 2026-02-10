@@ -2,6 +2,23 @@
     const DRAFT_KEY = "chunk-translator-draft-v1";
     const DEFAULT_CONCURRENCY = 2;
     const LOG_HIDE_DELAY = 3000;
+    const MODEL_ALIASES = {
+      "gemini-3-pro": "gemini-3-pro-preview",
+      "gemini-3-flash": "gemini-3-flash-preview",
+    };
+    const WELL_KNOWN_MODEL_PRICING = {
+      "gpt-5.2": { input: 1.75, output: 14, cache_read: 0.175 },
+      "gpt-5-mini": { input: 0.25, output: 2, cache_read: 0.025 },
+      "gpt-5-nano": { input: 0.05, output: 0.4, cache_read: 0.005 },
+      "o4-mini": { input: 1.1, output: 4.4, cache_read: 0.28 },
+      "claude-opus-4-6": { input: 5, output: 25, cache_read: 0.5 },
+      "claude-sonnet-4-5": { input: 3, output: 15, cache_read: 0.3 },
+      "claude-haiku-4-5": { input: 1, output: 5, cache_read: 0.1 },
+      "gemini-3-pro-preview": { input: 2, output: 12, cache_read: 0.2 },
+      "gemini-3-flash-preview": { input: 0.5, output: 3, cache_read: 0.05 },
+      "gemini-2.5-flash": { input: 0.3, output: 2.5, cache_read: 0.075 },
+      "gemini-2.5-flash-lite": { input: 0.1, output: 0.4, cache_read: 0.025 },
+    };
 
     let draftTimer = null;
     const logTimers = new WeakMap();
@@ -278,6 +295,58 @@
     function updateConcurrencyUI() {
       const value = getConcurrency();
       els.concurrencyValue.textContent = String(value);
+    }
+
+    function normalizeModelId(value) {
+      return (value || "").trim().toLowerCase();
+    }
+
+    function stripProviderPrefix(modelId) {
+      const raw = String(modelId || "").trim();
+      const lower = raw.toLowerCase();
+      const prefixes = ["openai/", "anthropic/", "google/", "gemini/"];
+      for (const prefix of prefixes) {
+        if (lower.startsWith(prefix)) return raw.slice(prefix.length);
+      }
+      return raw;
+    }
+
+    function parseCostValue(value) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function resolveWellKnownPricing(modelId) {
+      const normalized = normalizeModelId(stripProviderPrefix(modelId));
+      if (!normalized) return null;
+      const key = MODEL_ALIASES[normalized] || normalized;
+      return WELL_KNOWN_MODEL_PRICING[key] || null;
+    }
+
+    function setPriceInputValue(el, value) {
+      if (!el) return;
+      if (value === null || value === undefined) {
+        el.value = "";
+        return;
+      }
+      el.value = String(value);
+    }
+
+    function prefillPricingForModel(kind, modelId) {
+      const pricing = resolveWellKnownPricing(modelId);
+      if (!pricing) return;
+      const inputCost = parseCostValue(pricing.input);
+      const outputCost = parseCostValue(pricing.output);
+      const cachedCost = parseCostValue(pricing.cache_read);
+      if (inputCost === null && outputCost === null && cachedCost === null) return;
+      const promptEl = kind === "summary" ? els.summaryPricePrompt : els.translatePricePrompt;
+      const cachedEl = kind === "summary" ? els.summaryPriceCached : els.translatePriceCached;
+      const completionEl = kind === "summary" ? els.summaryPriceCompletion : els.translatePriceCompletion;
+      setPriceInputValue(promptEl, inputCost);
+      setPriceInputValue(cachedEl, cachedCost);
+      setPriceInputValue(completionEl, outputCost);
+      saveSettings();
+      updateUsageUI();
     }
 
     function normalizeUsage(usage) {
@@ -1119,7 +1188,7 @@
       }
       els.summaryBtn.disabled = true;
       els.summaryAgainBtn.disabled = true;
-      setLog(els.summaryLog, "[active] 요약 생성 중...", "");
+      setLog(els.summaryLog, "요약 생성 중...", "");
       try {
         els.summaryText.value = "";
         state.summary.text = "";
@@ -1420,6 +1489,14 @@
           setLog(els.inputLog, "Saved.", "ok");
           updateUsageUI();
         });
+      });
+
+      els.summaryModel.addEventListener("input", () => {
+        prefillPricingForModel("summary", els.summaryModel.value);
+      });
+
+      els.translateModel.addEventListener("input", () => {
+        prefillPricingForModel("translate", els.translateModel.value);
       });
 
       els.sourceInput.addEventListener("input", () => {
