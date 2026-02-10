@@ -391,40 +391,73 @@
       return text.match(regex) || [text];
     }
 
+    function mergeSmallChunks(chunks, endsParagraph, minLength) {
+      if (!Array.isArray(chunks) || chunks.length === 0) return [];
+      if (!Array.isArray(endsParagraph) || endsParagraph.length !== chunks.length) {
+        return chunks.slice();
+      }
+      const merged = [];
+      let current = chunks[0];
+      let currentLength = current.length;
+
+      for (let i = 1; i < chunks.length; i += 1) {
+        const next = chunks[i];
+        const candidateLength = currentLength + next.length;
+        if (candidateLength < minLength) {
+          const joiner = endsParagraph[i - 1] ? "\n\n" : "";
+          current += joiner + next;
+          currentLength = candidateLength + joiner.length;
+          continue;
+        }
+        merged.push(current);
+        current = next;
+        currentLength = next.length;
+      }
+
+      merged.push(current);
+      return merged;
+    }
+
     function chunkText(raw) {
       const paragraphs = raw.split(/\n\s*\n+/);
       const chunks = [];
+      const endsParagraph = [];
       paragraphs.forEach((para) => {
         if (!para || !para.trim()) return;
         const clean = para.replace(/^\n+|\n+$/g, "");
+        const paraChunks = [];
         if (clean.length <= 800) {
-          chunks.push(clean);
-          return;
+          paraChunks.push(clean);
+        } else {
+          const sentences = sentenceSegments(clean);
+          let buffer = "";
+          sentences.forEach((sentence) => {
+            if (sentence.length > 800) {
+              const pieces = splitByLength(sentence, 800);
+              pieces.forEach((piece) => {
+                if (buffer.length) {
+                  paraChunks.push(buffer);
+                  buffer = "";
+                }
+                paraChunks.push(piece);
+              });
+              return;
+            }
+            if (buffer.length + sentence.length > 800 && buffer.length) {
+              paraChunks.push(buffer);
+              buffer = sentence;
+            } else {
+              buffer += sentence;
+            }
+          });
+          if (buffer.length) paraChunks.push(buffer);
         }
-        const sentences = sentenceSegments(clean);
-        let buffer = "";
-        sentences.forEach((sentence) => {
-          if (sentence.length > 800) {
-            const pieces = splitByLength(sentence, 800);
-            pieces.forEach((piece) => {
-              if (buffer.length) {
-                chunks.push(buffer);
-                buffer = "";
-              }
-              chunks.push(piece);
-            });
-            return;
-          }
-          if (buffer.length + sentence.length > 800 && buffer.length) {
-            chunks.push(buffer);
-            buffer = sentence;
-          } else {
-            buffer += sentence;
-          }
+        paraChunks.forEach((text, index) => {
+          chunks.push(text);
+          endsParagraph.push(index === paraChunks.length - 1);
         });
-        if (buffer.length) chunks.push(buffer);
       });
-      return chunks;
+      return mergeSmallChunks(chunks, endsParagraph, 300);
     }
 
     function createChunk(text) {
