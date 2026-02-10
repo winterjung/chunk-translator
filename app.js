@@ -6,6 +6,7 @@
     let draftTimer = null;
     const logTimers = new WeakMap();
     const translateLabelTimers = new Map();
+    const chunkUpdateFrames = new Map();
 
     const SYSTEM_TRANSLATION = [
       "You are a translation engine.",
@@ -682,6 +683,24 @@
       }
     }
 
+    function scheduleChunkUpdate(chunk) {
+      if (chunkUpdateFrames.has(chunk.id)) return;
+      const frame = requestAnimationFrame(() => {
+        chunkUpdateFrames.delete(chunk.id);
+        updateChunkCard(chunk);
+      });
+      chunkUpdateFrames.set(chunk.id, frame);
+    }
+
+    function flushChunkUpdate(chunk) {
+      const frame = chunkUpdateFrames.get(chunk.id);
+      if (frame) {
+        cancelAnimationFrame(frame);
+        chunkUpdateFrames.delete(chunk.id);
+      }
+      updateChunkCard(chunk);
+    }
+
     function applyChunking() {
       const raw = els.sourceInput.value;
       if (!raw.trim()) {
@@ -810,6 +829,123 @@
       return data;
     }
 
+    async function callChatCompletionStream({ baseUrl, apiKey, model, messages, signal, onDelta, onUsage }) {
+      const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        signal,
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 1.0,
+          stream: true,
+          stream_options: { include_usage: true },
+        }),
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok) {
+        const text = await res.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch (err) {
+          throw new Error(`Invalid JSON (${res.status})`);
+        }
+        const message = extractErrorMessage(data) || res.statusText || "Request failed";
+        throw new Error(`${res.status} ${message}`);
+      }
+
+      if (!res.body || !contentType.includes("text/event-stream")) {
+        const text = await res.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch (err) {
+          throw new Error("Invalid JSON");
+        }
+        const output = data && data.choices && data.choices[0] && data.choices[0].message
+          ? data.choices[0].message.content
+          : "";
+        if (output && typeof onDelta === "function") {
+          onDelta(output);
+        }
+        const usage = normalizeUsage(data && data.usage ? data.usage : null);
+        if (usage && typeof onUsage === "function") {
+          onUsage(usage);
+        }
+        return { text: output || "", usage };
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let eventLines = [];
+      let result = "";
+      let usage = null;
+      let isDone = false;
+
+      const flushEvent = (dataString) => {
+        if (!dataString) return;
+        if (dataString === "[DONE]") {
+          isDone = true;
+          return;
+        }
+        let payload = null;
+        try {
+          payload = JSON.parse(dataString);
+        } catch (err) {
+          return;
+        }
+        const nextUsage = normalizeUsage(payload && payload.usage ? payload.usage : null);
+        if (nextUsage) {
+          usage = nextUsage;
+          if (typeof onUsage === "function") onUsage(nextUsage);
+        }
+        if (!payload || !Array.isArray(payload.choices)) return;
+        payload.choices.forEach((choice) => {
+          if (!choice || !choice.delta) return;
+          const deltaText = typeof choice.delta.content === "string" ? choice.delta.content : "";
+          if (!deltaText) return;
+          result += deltaText;
+          if (typeof onDelta === "function") onDelta(deltaText, result);
+        });
+      };
+
+      while (!isDone) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          if (line === "") {
+            if (eventLines.length) {
+              const dataString = eventLines.join("\n");
+              eventLines = [];
+              flushEvent(dataString);
+              if (isDone) break;
+            }
+            continue;
+          }
+          if (line.startsWith("data:")) {
+            eventLines.push(line.replace(/^data:\s?/, ""));
+          }
+        }
+      }
+
+      if (eventLines.length) {
+        flushEvent(eventLines.join("\n"));
+      }
+
+      return { text: result, usage };
+    }
+
     async function generateSummary() {
       const source = els.sourceInput.value.trim();
       if (!source) {
@@ -833,6 +969,9 @@
       els.summaryAgainBtn.disabled = true;
       setLog(els.summaryLog, "[active] 요약 생성 중...", "");
       try {
+        els.summaryText.value = "";
+        state.summary.text = "";
+        state.summary.usage = null;
         const messages = [
           { role: "system", content: SYSTEM_SUMMARY },
           {
@@ -848,15 +987,31 @@
             ].join("\n"),
           },
         ];
-        const data = await callChatCompletion({ baseUrl, apiKey, model, messages });
-        const output = data && data.choices && data.choices[0] && data.choices[0].message
-          ? data.choices[0].message.content
-          : "";
-        if (!output) throw new Error("Empty response");
-        els.summaryText.value = output.trim();
-        state.summary.text = output.trim();
-        const usage = normalizeUsage(data.usage);
-        state.summary.usage = usage;
+        let streamedText = "";
+        let streamedUsage = null;
+        const streamResult = await callChatCompletionStream({
+          baseUrl,
+          apiKey,
+          model,
+          messages,
+          onDelta: (deltaText) => {
+            streamedText += deltaText;
+            els.summaryText.value = streamedText;
+            state.summary.text = streamedText;
+          },
+          onUsage: (usage) => {
+            streamedUsage = usage;
+          },
+        });
+        if (!streamedText && streamResult && streamResult.text) {
+          streamedText = streamResult.text;
+        }
+        if (!streamedText) throw new Error("Empty response");
+        const finalText = streamedText.trim();
+        els.summaryText.value = finalText;
+        state.summary.text = finalText;
+        const usage = streamedUsage || (streamResult ? streamResult.usage : null);
+        state.summary.usage = usage || null;
         if (usage) addUsage(state.usageTotals.summary, usage);
         updateUsageUI();
         scheduleDraftSave();
@@ -924,6 +1079,9 @@
         const summaryText = els.summaryText.value.trim();
         const extra = chunk.extraInstruction ? chunk.extraInstruction.trim() : "";
         const previous = chunk.translatedText ? chunk.translatedText.trim() : "";
+        chunk.translatedText = "";
+        chunk.usage = null;
+        updateChunkCard(chunk);
         const contentParts = [
           `Target language: ${target}`,
           "Preserve the original tone.",
@@ -955,22 +1113,35 @@
             content: contentParts.join("\n"),
           },
         ];
-        const data = await callChatCompletion({ baseUrl, apiKey, model, messages, signal: controller.signal });
-        const output = data && data.choices && data.choices[0] && data.choices[0].message
-          ? data.choices[0].message.content
-          : "";
-        if (!output) throw new Error("Empty response");
-        chunk.translatedText = output.trimEnd();
+        const streamResult = await callChatCompletionStream({
+          baseUrl,
+          apiKey,
+          model,
+          messages,
+          signal: controller.signal,
+          onDelta: (deltaText) => {
+            chunk.translatedText += deltaText;
+            scheduleChunkUpdate(chunk);
+          },
+          onUsage: (usage) => {
+            chunk.usage = usage;
+          },
+        });
+        if (!chunk.translatedText && streamResult && streamResult.text) {
+          chunk.translatedText = streamResult.text;
+        }
+        if (!chunk.translatedText) throw new Error("Empty response");
+        chunk.translatedText = chunk.translatedText.trimEnd();
         chunk.status = "done";
-        const usage = normalizeUsage(data.usage);
-        chunk.usage = usage;
+        const usage = chunk.usage || (streamResult ? streamResult.usage : null);
+        chunk.usage = usage || null;
         if (usage) addUsage(state.usageTotals.translate, usage);
         updateUsageUI();
       } catch (err) {
         chunk.status = "error";
         chunk.error = err && err.name === "AbortError" ? "Canceled." : err.message;
       } finally {
-        updateChunkCard(chunk);
+        flushChunkUpdate(chunk);
         scheduleDraftSave();
         if (state.queue.active > 0) state.queue.active -= 1;
         state.queue.inFlight.delete(id);
