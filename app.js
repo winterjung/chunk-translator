@@ -88,7 +88,6 @@
       inputLog: document.getElementById("inputLog"),
       summaryLog: document.getElementById("summaryLog"),
       chunkLog: document.getElementById("chunkLog"),
-      toast: document.getElementById("toast"),
       concurrencyRange: document.getElementById("concurrencyRange"),
       concurrencyValue: document.getElementById("concurrencyValue"),
     };

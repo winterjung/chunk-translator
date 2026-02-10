@@ -368,24 +368,6 @@
       color: var(--err);
     }
 
-    .toast {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 6px 10px;
-      font-size: 12px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 120ms ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-    }
-
     @media (max-width: 900px) {
       .grid-2,
       .grid-3 {

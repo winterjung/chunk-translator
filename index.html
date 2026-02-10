@@ -92,7 +92,7 @@
         </div>
         <div class="grid-2" style="margin-top: 8px;">
           <div class="price-box">
-            <div class="label">요약 모델 단가 (USD / 1M tokens)</div>
+            <div class="label">요약 모델 단가 ($/1M tokens)</div>
             <div class="price-grid">
               <label class="price-label" for="summaryPricePrompt">input</label>
               <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50" aria-label="요약 prompt 단가" />
@@ -103,7 +103,7 @@
             </div>
           </div>
           <div class="price-box">
-            <div class="label">번역 모델 단가 (USD / 1M tokens)</div>
+            <div class="label">번역 모델 단가 ($/1M tokens)</div>
             <div class="price-grid">
               <label class="price-label" for="translatePricePrompt">input</label>
               <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50" aria-label="번역 prompt 단가" />
@@ -114,7 +114,7 @@
             </div>
           </div>
         </div>
-        <div class="help">단가를 입력하면 사용량 비용이 계산됩니다. cached는 캐시 토큰 단가입니다.</div>
+        <div class="help">모델 별 비용은 <a href="https://models.dev" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">models.dev</a> 사이트를 참고하세요.</div>
         <div class="log is-hidden" id="inputLog"></div>
       </div>
     </section>
@@ -151,8 +151,8 @@
       <div style="margin-top: 8px;">
         <label class="label" for="concurrencyRange">동시 요청</label>
         <div class="row">
-          <input id="concurrencyRange" type="range" min="1" max="8" step="1" value="2" aria-label="동시 요청" />
-          <div class="chunk-meta">현재 <span id="concurrencyValue">2</span>개</div>
+          <input id="concurrencyRange" type="range" min="1" max="8" step="1" value="4" aria-label="동시 요청" />
+          <div class="chunk-meta">현재 <span id="concurrencyValue">4</span>개</div>
         </div>
       </div>
       <div class="chunk-list" id="chunkList"></div>
@@ -168,8 +168,6 @@
       </div>
     </section>
   </main>
-
-  <div class="toast" id="toast">Copied.</div>
 
   <script src="./app.js" defer></script>
 </body>
