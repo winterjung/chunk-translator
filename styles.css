@@ -188,6 +188,11 @@
       margin: 6px 0 8px;
     }
 
+    .link-underline {
+      color: inherit;
+      text-decoration: underline;
+    }
+
     .actions {
       display: flex;
       gap: 8px;
