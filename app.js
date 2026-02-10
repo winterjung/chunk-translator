@@ -7,33 +7,11 @@
     const logTimers = new WeakMap();
     const translateLabelTimers = new Map();
 
-    const STYLE_PRESETS = {
-      origin: {
-        label: "원본 느낌대로",
-        desc: "원문의 톤과 구조를 최대한 유지한다.",
-      },
-      tech: {
-        label: "기술블로그",
-        desc: "설명적이며 단계적으로 정리하고 용어 정확성을 우선한다.",
-      },
-      hacker: {
-        label: "Hackernews",
-        desc: "직설적이고 간결하며 주장과 근거를 짧게 제시한다.",
-      },
-      pedantic: {
-        label: "지루하고 현학적임",
-        desc: "과하게 형식적이며 장황하게 서술한다.",
-      },
-      custom: {
-        label: "자유 입력",
-        desc: "사용자 입력 지시를 최우선으로 따른다.",
-      },
-    };
-
     const SYSTEM_TRANSLATION = [
       "You are a translation engine.",
       "The input may be in any language.",
       "Translate into the target language.",
+      "Always preserve the original tone and voice.",
       "Preserve Markdown, formatting, and structure.",
       "Do NOT translate code blocks, inline code (``), URLs, file paths, or commands.",
     ].join(" ");
@@ -72,7 +50,6 @@
       summaryModel: document.getElementById("summaryModel"),
       translateModel: document.getElementById("translateModel"),
       targetLang: document.getElementById("targetLang"),
-      styleCustom: document.getElementById("styleCustom"),
       sourceInput: document.getElementById("sourceInput"),
       summaryText: document.getElementById("summaryText"),
       summaryBtn: document.getElementById("summaryBtn"),
@@ -140,7 +117,6 @@
     }
 
     function saveSettings() {
-      const preset = document.querySelector("input[name='stylePreset']:checked");
       const payload = {
         baseUrl: els.baseUrl.value.trim(),
         apiKey: els.apiKey.value,
@@ -148,8 +124,6 @@
         translateModel: els.translateModel.value.trim(),
         targetLang: els.targetLang.value.trim(),
         concurrency: Number(els.concurrencyRange.value) || DEFAULT_CONCURRENCY,
-        stylePreset: preset ? preset.value : "origin",
-        styleCustom: els.styleCustom.value.trim(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       setLog(els.inputLog, "Saved.", "ok");
@@ -172,11 +146,6 @@
         }
         if (data.concurrency) {
           els.concurrencyRange.value = String(data.concurrency);
-        }
-        if (data.styleCustom) els.styleCustom.value = data.styleCustom;
-        if (data.stylePreset) {
-          const preset = document.querySelector(`input[name='stylePreset'][value='${data.stylePreset}']`);
-          if (preset) preset.checked = true;
         }
         updateConcurrencyUI();
       } catch (err) {
@@ -241,12 +210,6 @@
 
     function getTargetLanguage() {
       return els.targetLang.value.trim() || "English";
-    }
-
-    function getStylePreset() {
-      const preset = document.querySelector("input[name='stylePreset']:checked");
-      const key = preset ? preset.value : "origin";
-      return STYLE_PRESETS[key] || STYLE_PRESETS.origin;
     }
 
     function getConcurrency() {
@@ -905,16 +868,12 @@
       updateChunkCard(chunk);
       try {
         const target = getTargetLanguage();
-        const preset = getStylePreset();
-        const customStyle = els.styleCustom.value.trim();
         const summaryText = els.summaryText.value.trim();
         const extra = chunk.extraInstruction ? chunk.extraInstruction.trim() : "";
         const previous = chunk.translatedText ? chunk.translatedText.trim() : "";
         const contentParts = [
           `Target language: ${target}`,
-          `Style preset: ${preset.label}`,
-          `Style guidance: ${preset.desc}`,
-          `Custom style: ${customStyle || "(none)"}`,
+          "Preserve the original tone.",
           `Chunk extra instruction: ${extra || "(none)"}`,
         ];
         if (previous) {
@@ -1070,7 +1029,6 @@
         els.summaryModel,
         els.translateModel,
         els.targetLang,
-        els.styleCustom,
         els.concurrencyRange,
       ];
       saveInputs.forEach((el) => {
@@ -1088,10 +1046,6 @@
       els.concurrencyRange.addEventListener("input", () => {
         updateConcurrencyUI();
         if (state.queue.running) processQueue();
-      });
-
-      document.querySelectorAll("input[name='stylePreset']").forEach((el) => {
-        el.addEventListener("change", saveSettings);
       });
 
       document.querySelectorAll(".preset-chips").forEach((group) => {
