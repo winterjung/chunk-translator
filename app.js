@@ -944,15 +944,17 @@
         return;
       }
       const targetIndex = direction === "up" ? index - 1 : index + 1;
-      const base = state.chunks[targetIndex];
-      const current = state.chunks[index];
-      const separator = mergeSeparator(base.sourceText, current.sourceText);
-      base.sourceText = `${base.sourceText}${separator}${current.sourceText}`;
-      base.translatedText = "";
-      base.status = "pending";
-      base.error = "";
-      base.usage = null;
-      state.chunks.splice(index, 1);
+      const firstIndex = Math.min(index, targetIndex);
+      const secondIndex = Math.max(index, targetIndex);
+      const first = state.chunks[firstIndex];
+      const second = state.chunks[secondIndex];
+      const separator = mergeSeparator(first.sourceText, second.sourceText);
+      first.sourceText = `${first.sourceText}${separator}${second.sourceText}`;
+      first.translatedText = "";
+      first.status = "pending";
+      first.error = "";
+      first.usage = null;
+      state.chunks.splice(secondIndex, 1);
       renderChunks();
       scheduleDraftSave();
       setLog(els.chunkLog, "Merged.", "ok");
@@ -1196,13 +1198,11 @@
           {
             role: "user",
             content: [
-              `Target language: ${target}`,
               "Summarize the following text into exactly 3-5 bullet points in the target language.",
-              "Use '-' as the bullet prefix.",
-              "TEXT:",
-              "<<<",
+              `Target language: ${target}`,
+              "<text>",
               source,
-              ">>>",
+              "</text>",
             ].join("\n"),
           },
         ];
@@ -1302,27 +1302,33 @@
         updateChunkCard(chunk);
         const contentParts = [
           `Target language: ${target}`,
-          "Preserve the original tone.",
-          `Chunk extra instruction: ${extra || "(none)"}`,
         ];
+        if (extra) {
+          contentParts.push(
+            `Chunk extra instruction: ${extra}`,
+          );
+        }
         if (previous) {
           contentParts.push(
-            "Previous translation (use as a draft to improve, if any):",
-            "<<<PREVIOUS>>>",
+            "Previous translation (use as a draft to improve the translation):",
+            "<previous>",
             previous,
-            "<<<END PREVIOUS>>>",
+            "</previous>",
+          );
+        }
+        if (summaryText) {
+          contentParts.push(
+            "Summary (use as a context to improve the translation):",
+            "<summary>",
+            summaryText,
+            "</summary>",
           );
         }
         contentParts.push(
-          "Summary (context only, do NOT copy into output):",
-          "<<<SUMMARY>>>",
-          summaryText || "(empty)",
-          "<<<END SUMMARY>>>",
-          "Chunk to translate:",
-          "<<<CHUNK>>>",
+          "Translate the following chunk:",
+          "<chunk>",
           chunk.sourceText,
-          "<<<END CHUNK>>>",
-          "Translate only the chunk. Do not include the summary in the output.",
+          "</chunk>",
         );
         const messages = [
           { role: "system", content: SYSTEM_TRANSLATION },
