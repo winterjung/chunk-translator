@@ -9,18 +9,15 @@
 
     const SYSTEM_TRANSLATION = [
       "You are a translation engine.",
-      "The input may be in any language.",
-      "Translate into the target language.",
-      "Always preserve the original tone and voice.",
+      "Translate the given text into the target language.",
+      "Always preserve the original tone and voice with intention.",
       "Preserve Markdown, formatting, and structure.",
-      "Do NOT translate code blocks, inline code (``), URLs, file paths, or commands.",
+      "Preserve code blocks and inline code, but translate human-readable comments.",
     ].join(" ");
 
     const SYSTEM_SUMMARY = [
       "You are a summarization engine.",
-      "The input may be in any language.",
-      "Write the summary in the target language.",
-      "Do NOT translate code blocks, inline code (``), URLs, file paths, or commands.",
+      "Write the summary for the given text in the target language.",
     ].join(" ");
 
     const state = {
@@ -842,7 +839,7 @@
             role: "user",
             content: [
               `Target language: ${target}`,
-              "Summarize the following text into exactly 5 bullet points in the target language.",
+              "Summarize the following text into exactly 3-5 bullet points in the target language.",
               "Use '-' as the bullet prefix.",
               "TEXT:",
               "<<<",
