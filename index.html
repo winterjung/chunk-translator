@@ -58,6 +58,10 @@
           <div>
             <label class="label" for="apiKey">API Key</label>
             <input id="apiKey" type="password" aria-label="API Key" placeholder="sk-..." />
+            <div class="preset-chips" aria-label="API Key 테스트">
+              <button id="connectionTestBtn" class="chip" type="button" aria-label="연결 테스트">연결 테스트</button>
+            </div>
+            <div class="log is-hidden" id="connectionTestLog" role="status" aria-live="polite"></div>
           </div>
         </div>
         <div class="grid-3" style="margin-top: 8px;">

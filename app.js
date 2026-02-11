@@ -87,6 +87,8 @@
       translatePriceCompletion: document.getElementById("translatePriceCompletion"),
       copyAllBtn: document.getElementById("copyAllBtn"),
       inputLog: document.getElementById("inputLog"),
+      connectionTestBtn: document.getElementById("connectionTestBtn"),
+      connectionTestLog: document.getElementById("connectionTestLog"),
       summaryLog: document.getElementById("summaryLog"),
       chunkLog: document.getElementById("chunkLog"),
       concurrencyRange: document.getElementById("concurrencyRange"),
@@ -1063,6 +1065,31 @@
       return "";
     }
 
+    async function callModels({ baseUrl, apiKey, signal }) {
+      const url = `${baseUrl.replace(/\/$/, "")}/models`;
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+      const res = await fetch(url, {
+        method: "GET",
+        headers,
+        signal,
+      });
+      const text = await res.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (err) {
+        throw new Error(`Invalid JSON (${res.status})`);
+      }
+      if (!res.ok) {
+        const message = extractErrorMessage(data) || res.statusText || "Request failed";
+        throw new Error(`${res.status} ${message}`);
+      }
+      return data;
+    }
+
     async function callChatCompletion({ baseUrl, apiKey, model, messages, signal }) {
       const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
       const headers = {
@@ -1091,6 +1118,37 @@
         throw new Error(`${res.status} ${message}`);
       }
       return data;
+    }
+
+    async function testConnection() {
+      if (!els.connectionTestBtn || !els.connectionTestLog) return;
+      const baseUrl = els.baseUrl.value.trim();
+      const apiKey = els.apiKey.value;
+      if (!baseUrl) {
+        setLog(els.connectionTestLog, "Error: missing Base URL.", "error");
+        return;
+      }
+      if (!apiKey) {
+        setLog(els.connectionTestLog, "Error: missing API key.", "error");
+        return;
+      }
+      const unsupportedMessage = getUnsupportedBaseUrlMessage(baseUrl);
+      if (unsupportedMessage) {
+        setLog(els.connectionTestLog, `Error: ${unsupportedMessage}`, "error");
+        return;
+      }
+      els.connectionTestBtn.disabled = true;
+      setLog(els.connectionTestLog, "테스트 중...", "");
+      try {
+        const data = await callModels({ baseUrl, apiKey });
+        const count = data && Array.isArray(data.data) ? data.data.length : 0;
+        const message = count ? `OK: ${count}개 모델 응답.` : "OK: 응답 확인됨.";
+        setLog(els.connectionTestLog, message, "ok");
+      } catch (err) {
+        setLog(els.connectionTestLog, `Error: ${err.message}`, "error");
+      } finally {
+        els.connectionTestBtn.disabled = false;
+      }
     }
 
     async function callChatCompletionStream({ baseUrl, apiKey, model, messages, signal, onDelta, onUsage }) {
@@ -1578,6 +1636,10 @@
           const collapsed = els.settingsSection.classList.contains("is-collapsed");
           setSettingsCollapsed(!collapsed);
         });
+      }
+
+      if (els.connectionTestBtn) {
+        els.connectionTestBtn.addEventListener("click", testConnection);
       }
 
       els.chunkBtn.addEventListener("click", applyChunking);
