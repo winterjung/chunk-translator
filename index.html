@@ -87,11 +87,11 @@
           </div>
           <div>
             <label class="label" for="targetLang">타깃 언어</label>
-            <input id="targetLang" type="text" aria-label="타깃 언어" value="English" placeholder="예: English, Japanese, Python" />
+            <input id="targetLang" type="text" aria-label="타깃 언어" value="English" placeholder="예: English, Japanese" />
             <div class="preset-chips" id="targetLangPresets" aria-label="타깃 언어 프리셋">
               <button type="button" class="chip" data-target="targetLang" data-value="English">English</button>
+              <button type="button" class="chip" data-target="targetLang" data-value="Korean">Korean</button>
               <button type="button" class="chip" data-target="targetLang" data-value="Japanese">Japanese</button>
-              <button type="button" class="chip" data-target="targetLang" data-value="Python">Python</button>
             </div>
           </div>
         </div>
@@ -131,13 +131,13 @@
         <textarea id="sourceInput" aria-label="원문 입력" rows="10" placeholder="여기에 번역할 원문을 붙여넣기"></textarea>
       </div>
       <div class="actions">
-        <button id="chunkBtn" aria-label="청킹 생성">+ 청킹 생성</button>
+        <button id="chunkBtn" class="btn-accent" aria-label="청킹 생성">÷ 청킹 생성</button>
         <button id="resetBtn" class="btn-ghost" aria-label="입력 내용 초기화">↺ 입력 초기화</button>
       </div>
     </section>
 
     <section class="panel" id="summarySection">
-      <div class="section-title">[2] 요약</div>
+      <div class="section-title">[2] 요약 (Optional)</div>
       <div class="actions">
         <button id="summaryBtn" class="btn-accent" aria-label="요약 생성">▶ 요약 생성</button>
       </div>

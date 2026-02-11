@@ -1402,7 +1402,7 @@
         els.translateBtn.textContent = "■ 중지";
         els.translateBtn.setAttribute("aria-label", "번역 중지");
       } else {
-        els.translateBtn.textContent = "+ 전체 번역 시작";
+        els.translateBtn.textContent = "▶ 전체 번역 시작";
         els.translateBtn.setAttribute("aria-label", "전체 번역 시작");
       }
     }
