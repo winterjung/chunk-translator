@@ -95,31 +95,34 @@
             </div>
           </div>
         </div>
-        <div class="grid-2" style="margin-top: 8px;">
-          <div class="price-box">
-            <div class="label">요약 모델 단가 ($/1M tokens)</div>
-            <div class="price-grid">
-              <label class="price-label" for="summaryPricePrompt">input</label>
-              <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50" aria-label="요약 prompt 단가" />
-              <label class="price-label" for="summaryPriceCached">cached</label>
-              <input id="summaryPriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="요약 cached 단가" />
-              <label class="price-label" for="summaryPriceCompletion">output</label>
-              <input id="summaryPriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 2.00" aria-label="요약 completion 단가" />
+        <details class="pricing-details" id="pricingDetails">
+          <summary class="pricing-summary">모델 단가 ($/1M tokens)</summary>
+          <div class="grid-2 price-wrapper">
+            <div class="price-box">
+              <div class="label">요약 모델 단가</div>
+              <div class="price-grid">
+                <label class="price-label" for="summaryPricePrompt">input</label>
+                <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50" aria-label="요약 prompt 단가" />
+                <label class="price-label" for="summaryPriceCached">cached</label>
+                <input id="summaryPriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="요약 cached 단가" />
+                <label class="price-label" for="summaryPriceCompletion">output</label>
+                <input id="summaryPriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 2.00" aria-label="요약 completion 단가" />
+              </div>
+            </div>
+            <div class="price-box">
+              <div class="label">번역 모델 단가</div>
+              <div class="price-grid">
+                <label class="price-label" for="translatePricePrompt">input</label>
+                <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50" aria-label="번역 prompt 단가" />
+                <label class="price-label" for="translatePriceCached">cached</label>
+                <input id="translatePriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="번역 cached 단가" />
+                <label class="price-label" for="translatePriceCompletion">output</label>
+                <input id="translatePriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 1.00" aria-label="번역 completion 단가" />
+              </div>
             </div>
           </div>
-          <div class="price-box">
-            <div class="label">번역 모델 단가 ($/1M tokens)</div>
-            <div class="price-grid">
-              <label class="price-label" for="translatePricePrompt">input</label>
-              <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50" aria-label="번역 prompt 단가" />
-              <label class="price-label" for="translatePriceCached">cached</label>
-              <input id="translatePriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="번역 cached 단가" />
-              <label class="price-label" for="translatePriceCompletion">output</label>
-              <input id="translatePriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 1.00" aria-label="번역 completion 단가" />
-            </div>
-          </div>
-        </div>
-        <div class="help">모델 별 비용은 <a class="link-underline" href="https://models.dev" target="_blank" rel="noopener noreferrer">models.dev</a> 사이트를 참고하세요.</div>
+          <div class="help">모델 별 비용은 <a class="link-underline" href="https://models.dev" target="_blank" rel="noopener noreferrer">models.dev</a> 사이트를 참고하세요.</div>
+        </details>
         <div class="log is-hidden" id="inputLog"></div>
       </div>
     </section>

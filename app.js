@@ -78,6 +78,7 @@
       summaryCost: document.getElementById("summaryCost"),
       translateCost: document.getElementById("translateCost"),
       totalCost: document.getElementById("totalCost"),
+      pricingDetails: document.getElementById("pricingDetails"),
       summaryPricePrompt: document.getElementById("summaryPricePrompt"),
       summaryPriceCached: document.getElementById("summaryPriceCached"),
       summaryPriceCompletion: document.getElementById("summaryPriceCompletion"),
@@ -138,7 +139,8 @@
       target.focus();
     }
 
-    function saveSettings() {
+    function saveSettings(options = {}) {
+      const { silent = false } = options;
       const payload = {
         baseUrl: els.baseUrl.value.trim(),
         apiKey: els.apiKey.value,
@@ -146,20 +148,23 @@
         translateModel: els.translateModel.value.trim(),
         targetLang: els.targetLang.value.trim(),
         concurrency: Number(els.concurrencyRange.value) || DEFAULT_CONCURRENCY,
-        summaryPricePrompt: els.summaryPricePrompt.value,
-        summaryPriceCached: els.summaryPriceCached.value,
-        summaryPriceCompletion: els.summaryPriceCompletion.value,
-        translatePricePrompt: els.translatePricePrompt.value,
-        translatePriceCached: els.translatePriceCached.value,
-        translatePriceCompletion: els.translatePriceCompletion.value,
-      };
+      summaryPricePrompt: els.summaryPricePrompt.value,
+      summaryPriceCached: els.summaryPriceCached.value,
+      summaryPriceCompletion: els.summaryPriceCompletion.value,
+      translatePricePrompt: els.translatePricePrompt.value,
+      translatePriceCached: els.translatePriceCached.value,
+      translatePriceCompletion: els.translatePriceCompletion.value,
+      pricingOpen: els.pricingDetails ? els.pricingDetails.open : undefined,
+    };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      setLog(els.inputLog, "Saved.", "ok");
+      if (!silent) {
+        setLog(els.inputLog, "Saved.", "ok");
+      }
     }
 
     function loadSettings() {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+      if (!raw) return null;
       try {
         const data = JSON.parse(raw);
         if (data.baseUrl) els.baseUrl.value = data.baseUrl;
@@ -193,10 +198,15 @@
         if (data.translatePriceCompletion !== undefined) {
           els.translatePriceCompletion.value = String(data.translatePriceCompletion ?? "");
         }
+        if (data.pricingOpen !== undefined && els.pricingDetails) {
+          els.pricingDetails.open = Boolean(data.pricingOpen);
+        }
         updateConcurrencyUI();
+        return data;
       } catch (err) {
         setLog(els.inputLog, "Error: invalid settings.", "error");
       }
+      return null;
     }
 
     function clearDraftStorage() {
@@ -330,7 +340,8 @@
       el.value = String(value);
     }
 
-    function prefillPricingForModel(kind, modelId) {
+    function prefillPricingForModel(kind, modelId, options = {}) {
+      const { silent = false } = options;
       const pricing = resolveWellKnownPricing(modelId);
       if (!pricing) return;
       const inputCost = parseCostValue(pricing.input);
@@ -343,8 +354,40 @@
       setPriceInputValue(promptEl, inputCost);
       setPriceInputValue(cachedEl, cachedCost);
       setPriceInputValue(completionEl, outputCost);
-      saveSettings();
+      saveSettings({ silent });
       updateUsageUI();
+    }
+
+    function hasStoredPricing(data, kind) {
+      if (!data || typeof data !== "object") return false;
+      if (kind === "summary") {
+        return (
+          Object.prototype.hasOwnProperty.call(data, "summaryPricePrompt") ||
+          Object.prototype.hasOwnProperty.call(data, "summaryPriceCached") ||
+          Object.prototype.hasOwnProperty.call(data, "summaryPriceCompletion")
+        );
+      }
+      return (
+        Object.prototype.hasOwnProperty.call(data, "translatePricePrompt") ||
+        Object.prototype.hasOwnProperty.call(data, "translatePriceCached") ||
+        Object.prototype.hasOwnProperty.call(data, "translatePriceCompletion")
+      );
+    }
+
+    function hasAnyPriceInput(kind) {
+      const promptEl = kind === "summary" ? els.summaryPricePrompt : els.translatePricePrompt;
+      const cachedEl = kind === "summary" ? els.summaryPriceCached : els.translatePriceCached;
+      const completionEl = kind === "summary" ? els.summaryPriceCompletion : els.translatePriceCompletion;
+      return [promptEl, cachedEl, completionEl].some((el) => el && el.value.trim() !== "");
+    }
+
+    function prefillPricingDefaults(storedSettings) {
+      if (!hasStoredPricing(storedSettings, "summary") && !hasAnyPriceInput("summary")) {
+        prefillPricingForModel("summary", els.summaryModel.value, { silent: true });
+      }
+      if (!hasStoredPricing(storedSettings, "translate") && !hasAnyPriceInput("translate")) {
+        prefillPricingForModel("translate", els.translateModel.value, { silent: true });
+      }
     }
 
     function normalizeUsage(usage) {
@@ -1501,6 +1544,12 @@
         prefillPricingForModel("translate", els.translateModel.value);
       });
 
+      if (els.pricingDetails) {
+        els.pricingDetails.addEventListener("toggle", () => {
+          saveSettings({ silent: true });
+        });
+      }
+
       els.sourceInput.addEventListener("input", () => {
         scheduleDraftSave();
       });
@@ -1601,7 +1650,8 @@
       window.addEventListener("beforeunload", saveDraft);
     }
 
-    loadSettings();
+    const storedSettings = loadSettings();
+    prefillPricingDefaults(storedSettings);
     loadDraft();
     updateConcurrencyUI();
     updateUsageUI();
