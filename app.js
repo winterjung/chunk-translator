@@ -18,6 +18,8 @@
       "gemini-3-flash-preview": { input: 0.5, output: 3, cache_read: 0.05 },
       "gemini-2.5-flash": { input: 0.3, output: 2.5, cache_read: 0.075 },
       "gemini-2.5-flash-lite": { input: 0.1, output: 0.4, cache_read: 0.025 },
+      "gpt-oss-20b": { input: 0, output: 0, cache_read: 0 },
+      "gpt-oss-120b": { input: 0, output: 0, cache_read: 0 },
     };
 
     let draftTimer = null;
