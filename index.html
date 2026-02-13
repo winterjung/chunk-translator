@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chunk Translator</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
   <main>
     <section class="panel">
@@ -16,7 +18,8 @@
             contact:
             <a class="link-underline" href="mailto:me@winterjung.dev">me@winterjung.dev</a>
             ·
-            <a class="link-underline" href="https://github.com/winterjung/chunk-translator" target="_blank" rel="noopener noreferrer">github</a>
+            <a class="link-underline" href="https://github.com/winterjung/chunk-translator" target="_blank"
+              rel="noopener noreferrer">github</a>
           </div>
         </div>
       </div>
@@ -25,7 +28,8 @@
     <section class="panel" id="settingsSection">
       <div class="section-title section-title-row">
         <span>[0] 설정</span>
-        <button id="settingsToggle" class="btn-ghost btn-small" type="button" aria-expanded="true" aria-controls="settingsBody">접기</button>
+        <button id="settingsToggle" class="btn-ghost btn-small" type="button" aria-expanded="true"
+          aria-controls="settingsBody">접기</button>
       </div>
       <div id="settingsBody">
         <div class="grid-2">
@@ -37,11 +41,13 @@
                 <span class="chip-title">OpenAI</span>
                 <span class="chip-sub">https://api.openai.com/v1</span>
               </button>
-              <button type="button" class="chip" data-target="baseUrl" data-value="https://api.anthropic.com" disabled aria-disabled="true">
+              <button type="button" class="chip" data-target="baseUrl" data-value="https://api.anthropic.com" disabled
+                aria-disabled="true">
                 <span class="chip-title">Anthropic (not supported)</span>
                 <span class="chip-sub">https://api.anthropic.com</span>
               </button>
-              <button type="button" class="chip" data-target="baseUrl" data-value="https://generativelanguage.googleapis.com/v1beta/openai">
+              <button type="button" class="chip" data-target="baseUrl"
+                data-value="https://generativelanguage.googleapis.com/v1beta/openai">
                 <span class="chip-title">Gemini</span>
                 <span class="chip-sub">https://generativelanguage.googleapis.com/v1beta/openai</span>
               </button>
@@ -71,22 +77,32 @@
             <div class="preset-chips" id="summaryModelPresets" aria-label="요약 모델 프리셋">
               <button type="button" class="chip" data-target="summaryModel" data-value="gpt-5.2">gpt-5.2</button>
               <button type="button" class="chip" data-target="summaryModel" data-value="gpt-5-mini">gpt-5-mini</button>
-              <button type="button" class="chip" data-target="summaryModel" data-value="claude-opus-4-6">claude-opus-4-6</button>
-              <button type="button" class="chip" data-target="summaryModel" data-value="claude-sonnet-4-5">claude-sonnet-4-5</button>
-              <button type="button" class="chip" data-target="summaryModel" data-value="gemini-3-pro">gemini-3-pro</button>
-              <button type="button" class="chip" data-target="summaryModel" data-value="gemini-3-flash">gemini-3-flash</button>
+              <button type="button" class="chip" data-target="summaryModel"
+                data-value="claude-opus-4-6">claude-opus-4-6</button>
+              <button type="button" class="chip" data-target="summaryModel"
+                data-value="claude-sonnet-4-5">claude-sonnet-4-5</button>
+              <button type="button" class="chip" data-target="summaryModel"
+                data-value="gemini-3-pro">gemini-3-pro</button>
+              <button type="button" class="chip" data-target="summaryModel"
+                data-value="gemini-3-flash">gemini-3-flash</button>
             </div>
           </div>
           <div>
             <label class="label" for="translateModel">번역 모델</label>
             <input id="translateModel" type="text" aria-label="번역 모델" value="gpt-5-nano" />
             <div class="preset-chips" id="translateModelPresets" aria-label="번역 모델 프리셋">
-              <button type="button" class="chip" data-target="translateModel" data-value="gpt-5-mini">gpt-5-mini</button>
-              <button type="button" class="chip" data-target="translateModel" data-value="gpt-5-nano">gpt-5-nano</button>
-              <button type="button" class="chip" data-target="translateModel" data-value="claude-haiku-4-5">claude-haiku-4-5</button>
-              <button type="button" class="chip" data-target="translateModel" data-value="gemini-3-flash">gemini-3-flash</button>
-              <button type="button" class="chip" data-target="translateModel" data-value="gemini-2.5-flash">gemini-2.5-flash</button>
-              <button type="button" class="chip" data-target="translateModel" data-value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="gpt-5-mini">gpt-5-mini</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="gpt-5-nano">gpt-5-nano</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="claude-haiku-4-5">claude-haiku-4-5</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="gemini-3-flash">gemini-3-flash</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="gemini-2.5-flash">gemini-2.5-flash</button>
+              <button type="button" class="chip" data-target="translateModel"
+                data-value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</button>
             </div>
           </div>
           <div>
@@ -106,26 +122,33 @@
               <div class="label">요약 모델 단가</div>
               <div class="price-grid">
                 <label class="price-label" for="summaryPricePrompt">input</label>
-                <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50" aria-label="요약 prompt 단가" />
+                <input id="summaryPricePrompt" type="number" min="0" step="0.0001" placeholder="예: 1.50"
+                  aria-label="요약 prompt 단가" />
                 <label class="price-label" for="summaryPriceCached">cached</label>
-                <input id="summaryPriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="요약 cached 단가" />
+                <input id="summaryPriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가"
+                  aria-label="요약 cached 단가" />
                 <label class="price-label" for="summaryPriceCompletion">output</label>
-                <input id="summaryPriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 2.00" aria-label="요약 completion 단가" />
+                <input id="summaryPriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 2.00"
+                  aria-label="요약 completion 단가" />
               </div>
             </div>
             <div class="price-box">
               <div class="label">번역 모델 단가</div>
               <div class="price-grid">
                 <label class="price-label" for="translatePricePrompt">input</label>
-                <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50" aria-label="번역 prompt 단가" />
+                <input id="translatePricePrompt" type="number" min="0" step="0.0001" placeholder="예: 0.50"
+                  aria-label="번역 prompt 단가" />
                 <label class="price-label" for="translatePriceCached">cached</label>
-                <input id="translatePriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가" aria-label="번역 cached 단가" />
+                <input id="translatePriceCached" type="number" min="0" step="0.0001" placeholder="비워두면 prompt 단가"
+                  aria-label="번역 cached 단가" />
                 <label class="price-label" for="translatePriceCompletion">output</label>
-                <input id="translatePriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 1.00" aria-label="번역 completion 단가" />
+                <input id="translatePriceCompletion" type="number" min="0" step="0.0001" placeholder="예: 1.00"
+                  aria-label="번역 completion 단가" />
               </div>
             </div>
           </div>
-          <div class="help">모델 별 비용은 <a class="link-underline" href="https://models.dev" target="_blank" rel="noopener noreferrer">models.dev</a> 사이트를 참고하세요.</div>
+          <div class="help">모델 별 비용은 <a class="link-underline" href="https://models.dev" target="_blank"
+              rel="noopener noreferrer">models.dev</a> 사이트를 참고하세요.</div>
         </details>
         <div class="log is-hidden" id="inputLog"></div>
       </div>
@@ -174,13 +197,16 @@
     <section class="panel" id="usageSection">
       <div class="section-title">[4] 사용량</div>
       <div class="usage-summary">
-        <div>요약 모델 사용량: <span id="summaryUsage">N/A</span> · 비용 <span id="summaryCost" class="usage-cost">N/A</span></div>
-        <div>번역 모델 사용량: <span id="translateUsage">N/A</span> · 비용 <span id="translateCost" class="usage-cost">N/A</span></div>
+        <div>요약 모델 사용량: <span id="summaryUsage">N/A</span> · 비용 <span id="summaryCost" class="usage-cost">N/A</span>
+        </div>
+        <div>번역 모델 사용량: <span id="translateUsage">N/A</span> · 비용 <span id="translateCost" class="usage-cost">N/A</span>
+        </div>
         <div>총 비용: <span id="totalCost" class="usage-cost">N/A</span></div>
       </div>
     </section>
   </main>
 
-  <script src="./app.js" defer></script>
+  <script type="module" src="./src/app.js"></script>
 </body>
+
 </html>
