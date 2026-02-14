@@ -12,11 +12,25 @@
       <div class="panel-header">
         <div class="title">
           <h1>Chunk Translator</h1>
-          <div class="sub">
-            contact:
-            <a class="link-underline" href="mailto:me@winterjung.dev">me@winterjung.dev</a>
-            ·
-            <a class="link-underline" href="https://github.com/winterjung/chunk-translator" target="_blank" rel="noopener noreferrer">github</a>
+          <div class="sub-row">
+            <div class="sub">
+              contact:
+              <a class="link-underline" href="mailto:me@winterjung.dev">me@winterjung.dev</a>
+              ·
+              <a class="link-underline" href="https://github.com/winterjung/chunk-translator" target="_blank" rel="noopener noreferrer">github</a>
+            </div>
+            <div class="header-help-card">
+              <div class="header-help-title">사용법</div>
+              <p>Chunk Translator는 긴 글을 작은 청크로 나눠 번역하고 다시 합쳐, 통번역 중 빠지는 문장이나 과한 요약을 줄이도록 만든 도구입니다.</p>
+              <ol>
+                <li><strong>[0] 설정</strong>에서 Base URL, 모델, API Key를 입력합니다. ChatGPT를 구독 중이라면 <a class="link-underline" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">OpenAI API Keys</a>에서 키를 발급받아 사용할 수 있습니다.</li>
+                <li><strong>[1] 원문</strong>에 글을 붙여넣고 <strong>청킹 생성</strong>을 눌러 문단 단위 작업을 준비합니다.</li>
+                <li>필요하면 <strong>[2] 요약</strong>에서 <strong>요약 생성</strong>을 눌러 전체 맥락을 만든 뒤, 각 청크 번역에 함께 사용합니다.</li>
+                <li><strong>[3] 청킹 · 번역</strong>에서 <strong>전체 번역 시작</strong>을 누르면 청크별로 병렬 번역됩니다.</li>
+                <li>어색한 부분은 해당 청크에 지시를 추가해 <strong>재번역</strong>하고, 완료 후 <strong>전체 번역 복사</strong>로 결과를 가져가면 됩니다.</li>
+              </ol>
+              <div class="header-help-note">이 도구는 서버 없이 동작하는 단일 HTML 페이지이며, API Key는 설정한 제공자(OpenAI, OpenRouter 등)로만 전송됩니다. 별도 analytics 도구는 사용하지 않습니다.</div>
+            </div>
           </div>
         </div>
       </div>

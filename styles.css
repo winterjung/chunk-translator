@@ -71,6 +71,52 @@
       font-size: 12px;
     }
 
+    .sub-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .header-help-card {
+      flex-basis: 100%;
+      margin-top: 8px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: #fafafa;
+      font-size: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .header-help-title {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .header-help-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .header-help-card ol {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      display: grid;
+      gap: 4px;
+    }
+
+    .header-help-card li strong {
+      font-weight: 700;
+    }
+
+    .header-help-note {
+      color: var(--muted);
+    }
+
     .section-title {
       font-size: 13px;
       font-weight: 700;
