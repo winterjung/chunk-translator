@@ -69,6 +69,7 @@
       modelSettingsSummaryText: document.getElementById("modelSettingsSummaryText"),
       targetLang: document.getElementById("targetLang"),
       sourceInput: document.getElementById("sourceInput"),
+      sourceCharCount: document.getElementById("sourceCharCount"),
       summaryText: document.getElementById("summaryText"),
       summaryBtn: document.getElementById("summaryBtn"),
       chunkBtn: document.getElementById("chunkBtn"),
@@ -252,6 +253,7 @@
       translateLabelTimers.clear();
       resetQueueState();
       els.sourceInput.value = "";
+      updateSourceInputCount();
       els.summaryText.value = "";
       state.summary = { text: "", usage: null };
       state.chunks = [];
@@ -317,6 +319,12 @@
     function updateConcurrencyUI() {
       const value = getConcurrency();
       els.concurrencyValue.textContent = String(value);
+    }
+
+    function updateSourceInputCount() {
+      if (!els.sourceCharCount) return;
+      const length = (els.sourceInput.value || "").length;
+      els.sourceCharCount.textContent = `길이: ${length}자`;
     }
 
     function normalizeModelId(value) {
@@ -596,6 +604,7 @@
         state.chunks = data.chunks.map(createChunkFromDraft).filter((chunk) => chunk.sourceText && chunk.sourceText.trim());
         renderChunks();
       }
+      updateSourceInputCount();
       const storedTotals = normalizeStoredUsageTotals(data ? data.usageTotals : null);
       if (storedTotals) {
         state.usageTotals = storedTotals;
@@ -1625,6 +1634,7 @@
       }
 
       els.sourceInput.addEventListener("input", () => {
+        updateSourceInputCount();
         scheduleDraftSave();
       });
 
@@ -1731,6 +1741,7 @@
     const storedSettings = loadSettings();
     prefillPricingDefaults(storedSettings);
     loadDraft();
+    updateSourceInputCount();
     updateConcurrencyUI();
     updateUsageUI();
     updateTranslateButton();
