@@ -152,12 +152,6 @@
       gap: 10px;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
     .row {
       display: flex;
       gap: 10px;
@@ -376,14 +370,7 @@
       font-weight: 600;
     }
 
-    .chip-sub {
-      font-size: 11px;
-      color: var(--muted);
-      word-break: break-all;
-    }
-
-    .chunk-list,
-    .translate-list {
+    .chunk-list {
       display: grid;
       gap: 10px;
     }
@@ -471,8 +458,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid-2,
-      .grid-3 {
+      .grid-2 {
         grid-template-columns: 1fr;
       }
     }
