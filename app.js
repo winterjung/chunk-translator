@@ -66,6 +66,7 @@
       apiKey: document.getElementById("apiKey"),
       summaryModel: document.getElementById("summaryModel"),
       translateModel: document.getElementById("translateModel"),
+      modelSettingsSummaryText: document.getElementById("modelSettingsSummaryText"),
       targetLang: document.getElementById("targetLang"),
       sourceInput: document.getElementById("sourceInput"),
       summaryText: document.getElementById("summaryText"),
@@ -143,6 +144,14 @@
       target.focus();
     }
 
+    function updateModelSettingsSummary() {
+      if (els.modelSettingsSummaryText) {
+        const summaryModel = els.summaryModel.value.trim() || "-";
+        const translateModel = els.translateModel.value.trim() || "-";
+        els.modelSettingsSummaryText.textContent = `모델 설정 (요약: ${summaryModel} · 번역: ${translateModel})`;
+      }
+    }
+
     function saveSettings(options = {}) {
       const { silent = false } = options;
       const payload = {
@@ -206,6 +215,7 @@
           els.pricingDetails.open = Boolean(data.pricingOpen);
         }
         updateConcurrencyUI();
+        updateModelSettingsSummary();
         return data;
       } catch (err) {
         setLog(els.inputLog, "Error: invalid settings.", "error");
@@ -1598,11 +1608,15 @@
 
       els.summaryModel.addEventListener("input", () => {
         prefillPricingForModel("summary", els.summaryModel.value);
+        updateModelSettingsSummary();
       });
 
       els.translateModel.addEventListener("input", () => {
         prefillPricingForModel("translate", els.translateModel.value);
+        updateModelSettingsSummary();
       });
+
+      updateModelSettingsSummary();
 
       if (els.pricingDetails) {
         els.pricingDetails.addEventListener("toggle", () => {
